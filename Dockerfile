@@ -1,21 +1,12 @@
-FROM openjdk:11-jre-slim
+# ใช้ภาพ ActiveMQ Artemis อย่างเป็นทางการ
+FROM vromero/activemq-artemis
 
-# กำหนดเวอร์ชันของ ActiveMQ
-ENV ACTIVEMQ_VERSION=5.18.3
-ENV ACTIVEMQ_HOME=/opt/activemq
+# กำหนด environment variables (สามารถแก้ไขได้)
+ENV ARTEMIS_USERNAME=admin
+ENV ARTEMIS_PASSWORD=admin
 
-# ติดตั้ง ActiveMQ
-RUN apt-get update && apt-get install -y wget \
-    && wget https://archive.apache.org/dist/activemq/${ACTIVEMQ_VERSION}/apache-activemq-${ACTIVEMQ_VERSION}-bin.tar.gz \
-    && tar -xzf apache-activemq-${ACTIVEMQ_VERSION}-bin.tar.gz -C /opt \
-    && mv /opt/apache-activemq-${ACTIVEMQ_VERSION} ${ACTIVEMQ_HOME} \
-    && rm apache-activemq-${ACTIVEMQ_VERSION}-bin.tar.gz
+# กำหนดโฟลเดอร์เก็บข้อมูลเป็น volume
+VOLUME ["/var/lib/artemis"]
 
-# กำหนด Working Directory
-WORKDIR ${ACTIVEMQ_HOME}
-
-# เปิดพอร์ต
+# เปิดพอร์ตที่จำเป็น
 EXPOSE 61616 8161
-
-# เริ่มต้น ActiveMQ
-CMD ["/opt/activemq/bin/activemq", "console"]

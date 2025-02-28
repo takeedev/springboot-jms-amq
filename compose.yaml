@@ -1,26 +1,24 @@
-version: "3.8"
+version: '3.8'
 
 services:
-  activemq:
-    build: 
-      context: .
-      dockerfile: Dockerfile
-    container_name: activemq
+  activemq-artemis:
+    container_name: artemis
+    build: .
+    restart: unless-stopped
     ports:
-      - "61616:61616" # สำหรับ TCP Connection (JMS)
-      - "8161:8161"   # สำหรับ Web Console
+      - "61616:61616"  # สำหรับ JMS
+      - "8161:8161"    # สำหรับ Web UI
     environment:
-      ACTIVEMQ_USER: admin
-      ACTIVEMQ_PASSWORD: admin
+      ARTEMIS_USERNAME: admin
+      ARTEMIS_PASSWORD: admin
+    volumes:
+      - activemq_data:/var/lib/artemis
+    networks:
+      - activemq_network
 
-  spring-app:
-    image: openjdk:11
-    container_name: spring-boot-app
-    depends_on:
-      - activemq
-    ports:
-      - "8080:8080"
-    environment:
-      SPRING_ACTIVEMQ_BROKER-URL: tcp://activemq:61616
-      SPRING_ACTIVEMQ_USER: admin
-      SPRING_ACTIVEMQ_PASSWORD: admin
+volumes:
+  activemq_data:
+
+networks:
+  activemq_network:
+    driver: bridge
