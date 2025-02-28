@@ -24,13 +24,6 @@ public class AMQConsumer {
     @JmsListener(destination = "myQueue")
     public void onMessage(MessageModel myMessage, Message message) throws JMSException {
         String correlationId = message.getJMSCorrelationID();
-
-        // นำ CorrelationID ไปใช้ในการค้นหาข้อมูลในฐานข้อมูล
-        ResponseData responseData = myRepository.findByCorrelationId(correlationId);
-        
-        // ทำการประมวลผล response
-        System.out.println("Received message: " + myMessage.getContent());
-        System.out.println("Mapped Response: " + responseData);
     }
 
 }
