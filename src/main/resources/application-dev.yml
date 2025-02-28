@@ -1,0 +1,26 @@
+spring:
+    application:
+        name: springboot-jms-amq
+    activemq:
+      broker-url: tcp://localhost:61616
+      user: admin
+      password: admin
+    jms:
+      listener:
+        max-concurrency: 10
+      # template:
+      #   default-destination: test.queue
+
+server:
+  port: 9494
+  
+springdoc:
+  swagger-ui:
+    path: /swagger
+    displayRequestDuration: true
+    tryItOutEnabled: true
+    groupsOrder: DESC
+    operations-sorter: alpha
+    tags-sorter: alpha
+  api-docs:
+    path: /api-doc
