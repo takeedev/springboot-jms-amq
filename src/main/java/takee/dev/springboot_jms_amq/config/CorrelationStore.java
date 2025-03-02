@@ -5,7 +5,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.springframework.stereotype.Component;
 
 @Component
-public class CorrectionStore {
+public class CorrelationStore {
     
     private final Map<String, Object> correlationMap = new ConcurrentHashMap<>();
 

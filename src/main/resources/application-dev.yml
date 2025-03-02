@@ -8,9 +8,9 @@ spring:
     jms:
       listener:
         max-concurrency: 10
-      # template:
-      #   default-destination: test.queue
-
+      template:
+        default-destination: test.queue
+        
 server:
   port: 9494
   
