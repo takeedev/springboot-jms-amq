@@ -8,10 +8,10 @@ spring:
     jms:
       listener:
         max-concurrency: 10
-        min-concurrency: 5
-      template:
-        default-destination: test.queue
-        receive-timeout: 40000
+        min-concurrency: 1
+#      template:
+#        default-destination: test.queue
+#        receive-timeout: 40000
         
 server:
   port: 9494

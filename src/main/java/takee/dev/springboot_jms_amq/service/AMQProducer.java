@@ -1,6 +1,10 @@
 package takee.dev.springboot_jms_amq.service;
 
+import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
+
+import org.springframework.jms.JmsException;
 import org.springframework.jms.core.JmsTemplate;
 import org.springframework.stereotype.Service;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -9,7 +13,6 @@ import jakarta.jms.JMSException;
 import jakarta.jms.TextMessage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import takee.dev.springboot_jms_amq.config.CorrelationStore;
 import takee.dev.springboot_jms_amq.model.MessageModel;
 
 @Slf4j
@@ -19,25 +22,12 @@ public class AMQProducer {
 
     private final JmsTemplate jmsTemplate;
 
-    private final CorrelationStore correctionStore;
-
     private final ObjectMapper objectMapper;
+
+    private final Map<String, CompletableFuture<String>> correlationStore;
 
     public void sendMessage(String destination, String message) {
         jmsTemplate.convertAndSend(destination, message);
-    }
-
-    public void sendMessageDAO(String destination, MessageModel messageObj) {
-        String correlationId = UUID.randomUUID().toString();
-        correctionStore.put(correlationId, messageObj);
-        log.info("Request => " + correctionStore.get(correlationId));
-        jmsTemplate.send(destination, session -> {
-            TextMessage message = session.createTextMessage();
-            String jsonMessage = convertObjectToJson(messageObj);
-            message.setText(jsonMessage);
-            message.setJMSCorrelationID(correlationId);
-            return message;
-        });
     }
 
     private String convertObjectToJson(MessageModel messageObj) throws JMSException {
@@ -50,5 +40,22 @@ public class AMQProducer {
         return jsonMessage;
     }
 
+    public CompletableFuture<String> sendMsg(MessageModel messageModel) {
+        String correlationId = UUID.randomUUID().toString();
+        CompletableFuture<String> futureResponse = new CompletableFuture<>();
+        correlationStore.put(correlationId, futureResponse);
+        try {
+            jmsTemplate.send("test-queue", session -> {
+                TextMessage message = session.createTextMessage(convertObjectToJson(messageModel));
+                message.setJMSCorrelationID(correlationId);
+                return message;
+            });
+            log.info("✅ Sent message: {} | CorrelationID: {}", messageModel, correlationId);
+        } catch (JmsException e) {
+            correlationStore.remove(correlationId);
+            futureResponse.completeExceptionally(e);
+        }
+        return futureResponse;
+    }
 
 }
