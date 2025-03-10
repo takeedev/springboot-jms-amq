@@ -1,14 +1,17 @@
 package takee.dev.springboot_jms_amq.controller;
 
-import io.swagger.v3.oas.annotations.media.Schema;
-import io.swagger.v3.oas.annotations.parameters.RequestBody;
-import lombok.AllArgsConstructor;
-import org.springframework.web.bind.annotation.*;
-import takee.dev.springboot_jms_amq.model.MessageModel;
-import takee.dev.springboot_jms_amq.service.AMQProducer;
-
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.AllArgsConstructor;
+import takee.dev.springboot_jms_amq.model.MessageModel;
+import takee.dev.springboot_jms_amq.service.AMQProducer;
 
 
 @RestController
@@ -36,8 +39,7 @@ public class TransactionController {
 
     @PostMapping("/sendMessage")
     public CompletableFuture<String> sendMessage(@RequestBody MessageModel message) {
-        MessageModel request = new MessageModel("1", "Test Naja");
-        return amqProducer.sendMsg(request).orTimeout(1, TimeUnit.MINUTES);
+        return amqProducer.sendMsg(message).orTimeout(1, TimeUnit.MINUTES);
     }
 
 }
