@@ -1,18 +1,16 @@
 package takee.dev.springboot_jms_amq.service;
 
+import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 import org.apache.activemq.Message;
 import org.springframework.jms.annotation.JmsListener;
 import org.springframework.jms.core.JmsTemplate;
 import org.springframework.stereotype.Service;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import jakarta.jms.JMSException;
 import jakarta.jms.TextMessage;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import takee.dev.springboot_jms_amq.model.MessageModel;
-
-import java.util.Map;
-import java.util.concurrent.CompletableFuture;
 
 @Slf4j
 @Service
@@ -21,7 +19,9 @@ public class AMQConsumer {
 
     private final JmsTemplate jmsTemplate;
 
-    private final Map<String, CompletableFuture<String>> correlationStore;
+    private final ObjectMapper mapper;
+
+    private final Map<String, CompletableFuture<MessageModel>> correlationStore;
 
     @JmsListener(destination = "test-queue-multi-thread-")
     public void messageThread(String message) {
@@ -41,7 +41,8 @@ public class AMQConsumer {
             String correlationId = message.getJMSCorrelationID();
             String requestPayload = ((TextMessage) message).getText();
             log.info("Received message: {} | CorrelationID: {}", requestPayload, correlationId);
-            String processedData = "Processed: " + requestPayload;
+            Thread.sleep(3000);
+            String processedData = requestPayload;
             jmsTemplate.convertAndSend("response-queue", processedData, msg -> {
                 msg.setJMSCorrelationID(correlationId);
                 return msg;
@@ -57,10 +58,11 @@ public class AMQConsumer {
         try {
             String correlationId = message.getJMSCorrelationID();
             String responseText = ((TextMessage) message).getText();
+            MessageModel messageResponse = mapper.readValue(((TextMessage) message).getText(), MessageModel.class);
             log.info("Received response: {} | CorrelationID: {}", responseText, correlationId);
-            CompletableFuture<String> future = correlationStore.remove(correlationId);
+            CompletableFuture<MessageModel> future = correlationStore.remove(correlationId);
             if (future != null) {
-                future.complete(responseText);
+                future.complete(messageResponse);
             }
         } catch (Exception e) {
             log.error("Error receiving response: {}", e.getMessage(), e);

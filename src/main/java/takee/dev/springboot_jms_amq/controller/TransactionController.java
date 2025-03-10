@@ -38,7 +38,7 @@ public class TransactionController {
     }
 
     @PostMapping("/sendMessage")
-    public CompletableFuture<String> sendMessage(@RequestBody MessageModel message) {
+    public CompletableFuture<MessageModel> sendMessage(@RequestBody MessageModel message) {
         return amqProducer.sendMsg(message).orTimeout(1, TimeUnit.MINUTES);
     }
 

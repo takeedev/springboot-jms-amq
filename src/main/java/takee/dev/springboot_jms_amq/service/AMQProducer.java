@@ -24,7 +24,7 @@ public class AMQProducer {
 
     private final ObjectMapper objectMapper;
 
-    private final Map<String, CompletableFuture<String>> correlationStore;
+    private final Map<String, CompletableFuture<MessageModel>> correlationStore;
 
     public void sendMessage(String destination, String message) {
         jmsTemplate.convertAndSend(destination, message);
@@ -40,9 +40,9 @@ public class AMQProducer {
         return jsonMessage;
     }
 
-    public CompletableFuture<String> sendMsg(MessageModel messageModel) {
+    public CompletableFuture<MessageModel> sendMsg(MessageModel messageModel) {
         String correlationId = UUID.randomUUID().toString();
-        CompletableFuture<String> futureResponse = new CompletableFuture<>();
+        CompletableFuture<MessageModel> futureResponse = new CompletableFuture<>();
         correlationStore.put(correlationId, futureResponse);
         try {
             jmsTemplate.send("test-queue", session -> {
